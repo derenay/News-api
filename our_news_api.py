@@ -3,30 +3,75 @@ import math
 import json
 import os
 import re
-import time
+import pandas as pd
 
 # Google API bilgileri
 #API_KEY = "AIzaSyBGqcE-0a1smoF96XidQP8piPbvSUmL4p4"    AIzaSyBhC3wcdyK8ExV-77fnKv9Hbx8OLG4vUb8
-API_KEY = "AIzaSyBGqcE-0a1smoF96XidQP8piPbvSUmL4p4"
+API_KEY = "AIzaSyBhC3wcdyK8ExV-77fnKv9Hbx8OLG4vUb8"
 CX_ID = "221a514978cf94520"   #b0b54261ce0424f8e  221a514978cf94520
- 
-search_key = "andrew tate" #after:2024-08-01 before:2024-08-28
-search_dates = "after:2024-08-01 before:2024-08-28"
 
-"""google query 2000 den fazla karekter almıyor dikkatli kullan alanını yada yeni query oluştur"""
+search_key = "child abuse" #after:2024-08-01 before:2024-08-28
+search_dates = "after:2024-02-05 before:2024-03-1"
 
-query_one = 'site:cnn.com OR site:theguardian.com OR site:nytimes.com OR site:reuters.com OR site:aljazeera.com OR site:euronews.com OR site:bbc.co.uk OR site:abcnews.go.com OR site:forbes.com OR site:washingtonpost.com OR site:thehindu.com OR site:theatlantic.com OR site:businessinsider.com OR site:ft.com OR site:wsj.com OR site:usnews.com OR site:telegraph.co.uk OR site:theverge.com OR site:npr.org OR site:foxnews.com OR site:globalnews.ca OR site:latimes.com OR site:independent.co.uk OR site:sky.com OR site:cnn.co.uk OR site:nydailynews.com OR site:lemonde.fr OR site:lesechos.fr OR site:spiegel.de OR site:zeit.de OR site:derstandard.at OR site:rt.com OR site:southchinamorningpost.com OR site:cbc.ca OR site:scmp.com OR site:newsweek.com OR site:thetimes.co.uk OR site:independent.ie OR site:reuters.co.uk OR site:bloomberg.com OR site:elpais.com OR site:theguardian.com.au OR site:thehill.com OR site:democracynow.org OR site:voanews.com OR site:sydneymorningherald.com.au OR site:news.com.au OR site:express.co.uk OR site:chinadaily.com.cn OR site:arabnews.com OR site:al-monitor.com OR site:focustaiwan.tw OR site:taipeitimes.com OR site:taiwannews.com.tw OR site:walkfree.org OR site:maritime-executive.com OR site:wnd.com'
-query_two = 'site:egypttoday.com OR site:thearabweekly.com OR site:middleeasteye.net OR site:thenationalnews.com OR site:iranintl.com/en OR site:haaretz.com OR site:english.alarabiya.net OR site:almasdarnews.com OR site:asiatimes.com OR site:asianews.network OR site:wionews.com OR site:asahi.com/ajw OR site:edition.cnn.com/world/asia OR site:tass.com OR site:meduza.io/en OR site:deadspin.com OR site:frontpagedetectives.com OR site:thehollywoodgossip.com OR site:nypost.com OR site:thestar.com.my OR site:tmz.com OR site:thejakartapost.com OR site:koreaherald.com OR site:japantoday.com OR site:straitstimes.com/global OR site:manilatimes.net OR site:indiatoday.in OR site:themoscowtimes.com OR site:sputnikglobe.com OR site:turkmenistan.gov.tm/tk OR site:inform.kz OR site:theeastafrican.co.ke OR site:africanews.com OR site:thelocal.fr OR site:thelocal.de OR site:thelocal.es OR site:thelocal.it OR site:dutchnews.nl OR site:sweden.se OR site:thelocal.se OR site:ekathimerini.com OR site:greekreporter.com OR site:inquirer.net OR site:thejakartapost.com'
-query_three = 'site:bangkokpost.com OR site:koreaherald.com OR site:japantimes.co.jp OR site:smh.com.au OR site:nzherald.co.nz OR site:bbc.com/news OR site:alquds.com/en OR site:alquds.com OR site:alquds.com/ar OR site:ashams.com OR site:english.aawsat.com OR site:ahram.org.eg OR site:english.ahram.org.eg OR site:jadaliyya.com OR site:alarabiya.net OR site:jordantimes.com OR site:jpost.com OR site:haaretz.com/middle-east-news* OR site:bbc.com/news/world/middle_east* OR site:reuters.com/world/middle-east/ OR site:middleeastmonitor.com OR site:aljazeera.com/middle-east/ OR site:usatoday.com OR site:yahoo.com OR site:bostonglobe.com OR site:usmagazine.com OR site:radaronline.com OR site:mibtraderumors.com OR site:nbcnews.com OR site:journals.plos.org OR site:rawstory.com OR site:psychologytoday.com OR site:eff.org OR site:eonline.com OR site:miamiherald.com OR site:people.com OR site:wired.com OR site:boredpanda.com OR site:abs-cbn.com OR site:rappler.com OR site:pna.gov.ph OR site:kathmandupost.com OR site:nepalnews.com OR site:timesofisrael.com OR site:jewishinsider.com'
-query_four = 'site:theblaze.com OR site:roanoke.com OR site:rnz.co.nz OR site:hawaiinewsnnow.com OR site:healthychildren.org OR site:huffpost.com OR site:6abc.com OR site:9news.com.au OR site:fbi.gov OR site:westmidlands.police.uk OR site:pbs.org OR site:thejournal.ie OR site:tagesspiegel.de OR site:medianama.com OR site:naturalnews.com OR site:reason.com OR site:theroot.com OR site:thehillstimes.in OR site:timesofindia.indiatimes.com OR site:euractiv.com OR site:aajtak.in OR site:wonkette.com OR site:breitbart.com OR site:cbsnews.com OR site:hurriyetdailynews.com OR site:spectrumlocalnews.com OR site:kinglawoffices.com OR site:hopeandhomes.org OR site:advocate.com OR site:news24.com OR site:abc.net.au OR site:appleinsider.com OR site:readwrite.com OR site:guardian.com OR site:ilo.org OR site:go.kompas.com OR site:antaranews.com OR site:vaticannews.va OR site:hopeforjustice.org OR site:antislavery.org OR site:stopchildlabor.org OR site:akipress.com OR site:syriadirect.org OR site:enabbaladi.net OR site:afp.com/en OR site:pakistantoday.com.pk OR site:thenews.com.pk OR site:mothership.sg OR site:theindependent.sg OR site:todayonline.com OR site:channelnewsasia.com OR site:vietnamplus.vn OR site:vietnamnews.vn OR site:jagran.com OR site:cgtn.com'
+"""google query 660 den fazla karekter almıyor dikkatli kullan alanını yada yeni query oluştur"""
 
-queries = [
-    f'"{search_key}" OR intitle:"{search_key}" OR {search_key} {search_dates} {query_one}',
-    f'"{search_key}" OR intitle:"{search_key}" OR {search_key} {search_dates} {query_two}',
-    f'"{search_key}" OR intitle:"{search_key}" OR {search_key} {search_dates} {query_three}',
-    f'"{search_key}" OR intitle:"{search_key}" OR {search_key} {search_dates} {query_four}'
-]
+# search_list_1 = "site:cnn.com OR site:theguardian.com OR site:nytimes.com OR site:reuters.com OR site:aljazeera.com OR site:euronews.com OR site:bbc.co.uk OR site:abcnews.go.com OR site:forbes.com OR site:washingtonpost.com OR site:thehindu.com OR site:theatlantic.com OR site:businessinsider.com OR site:ft.com OR site:wsj.com OR site:usnews.com OR site:telegraph.co.uk OR site:theverge.com OR site:npr.org OR site:foxnews.com OR site:globalnews.ca OR site:latimes.com OR site:independent.co.uk OR site:sky.com OR site:cnn.co.uk"
 
+# search_list_2 = "site:nydailynews.com OR site:lemonde.fr OR site:lesechos.fr OR site:spiegel.de OR site:zeit.de OR site:derstandard.at OR site:rt.com OR site:southchinamorningpost.com OR site:cbc.ca OR site:scmp.com OR site:newsweek.com OR site:thetimes.co.uk OR site:independent.ie OR site:reuters.co.uk OR site:bloomberg.com OR site:elpais.com OR site:theguardian.com.au OR site:thehill.com OR site:democracynow.org OR site:voanews.com OR site:gov.uk"
+
+# search_list_3 = "site:sydneymorningherald.com.au OR site:news.com.au OR site:express.co.uk OR site:chinadaily.com.cn OR site:arabnews.com OR site:al-monitor.com OR site:focustaiwan.tw OR site:taipeitimes.com OR site:taiwannews.com.tw OR site:walkfree.org OR site:maritime-executive.com OR site:wnd.com OR site:egypttoday.com OR site:thearabweekly.com OR site:middleeasteye.net OR site:thenationalnews.com OR site:iranintl.com/en OR site:haaretz.com OR site:english.alarabiya.net"
+
+# search_list_4 = "site:almasdarnews.com OR site:asiatimes.com OR site:asianews.network OR site:wionews.com OR site:asahi.com/ajw OR site:edition.cnn.com/world/asia OR site:tass.com OR site:meduza.io/en OR site:deadspin.com OR site:frontpagedetectives.com OR site:thehollywoodgossip.com OR site:nypost.com OR site:thestar.com.my OR site:tmz.com OR site:thejakartapost.com OR site:koreaherald.com OR site:japantoday.com OR site:straitstimes.com/global OR site:manilatimes.net OR site:indiatoday.in"
+
+# search_list_5 = "site:themoscowtimes.com OR site:sputnikglobe.com OR site:turkmenistan.gov.tm/tk OR site:inform.kz OR site:theeastafrican.co.ke OR site:africanews.com OR site:thelocal.fr OR site:thelocal.de OR site:thelocal.es OR site:thelocal.it OR site:dutchnews.nl OR site:sweden.se OR site:thelocal.se OR site:ekathimerini.com OR site:greekreporter.com OR site:inquirer.net OR site:biztoc.com OR site:bangkokpost.com OR site:koreaherald.com OR site:bostonherald.com"
+
+# search_list_6 = "site:japantimes.co.jp OR site:smh.com.au OR site:nzherald.co.nz OR site:bbc.com/news OR site:alquds.com/en OR site:alquds.com OR site:alquds.com/ar OR site:ashams.com OR site:english.aawsat.com OR site:ahram.org.eg OR site:english.ahram.org.eg OR site:jadaliyya.com OR site:alarabiya.net OR site:jordantimes.com OR site:jpost.com OR site:haaretz.com/middle-east-news OR site:bbc.com/news/world/middle_east OR site:reuters.com/world/middle-east/ OR site:middleeastmonitor.com OR site:aljazeera.com/middle-east"
+
+# search_list_7 = "site:usatoday.com OR site:bostonglobe.com OR site:usmagazine.com OR site:radaronline.com OR site:mibtraderumors.com OR site:nbcnews.com OR site:journals.plos.org OR site:rawstory.com OR site:psychologytoday.com OR site:eff.org OR site:eonline.com OR site:miamiherald.com OR site:people.com OR site:wired.com OR site:boredpanda.com OR site:abs-cbn.com OR site:rappler.com OR site:pna.gov.ph OR site:kathmandupost.com OR site:nepalnews.com"
+
+# search_list_8 = "site:timesofisrael.com OR site:jewishinsider.com OR site:channelnewsasia.com OR site:theblaze.com OR site:roanoke.com OR site:rnz.co.nz OR site:hawaiinewsnnow.com OR site:healthychildren.org OR site:huffpost.com OR site:6abc.com OR site:9news.com.au OR site:fbi.gov OR site:westmidlands.police.uk OR site:pbs.org OR site:thejournal.ie OR site:tagesspiegel.de OR site:medianama.com OR site:naturalnews.com OR site:reason.com OR site:irishtimes.com"
+
+# search_list_9 = "site:theroot.com OR site:thehillstimes.in OR site:timesofindia.indiatimes.com OR site:euractiv.com OR site:aajtak.in OR site:wonkette.com OR site:breitbart.com OR site:cbsnews.com OR site:hurriyetdailynews.com OR site:spectrumlocalnews.com OR site:kinglawoffices.com OR site:hopeandhomes.org OR site:advocate.com OR site:news24.com OR site:abc.net.au OR site:appleinsider.com OR site:readwrite.com OR site:guardian.com OR site:ilo.org OR site:go.kompas.com"
+
+# search_list_10 = "site:antaranews.com OR site:vaticannews.va OR site:hopeforjustice.org OR site:antislavery.org OR site:stopchildlabor.org OR site:akipress.com OR site:syriadirect.org OR site:enabbaladi.net OR site:afp.com/en OR site:pakistantoday.com.pk OR site:thenews.com.pk OR site:mothership.sg OR site:theindependent.sg OR site:todayonline.com OR site:vietnamplus.vn OR site:vietnamnews.vn OR site:jagran.com OR site:cgtn.com OR site:economictimes.indiatimes.com"
+
+# search_lists = [
+#     search_list_1, search_list_2, search_list_3, search_list_4, search_list_5, 
+#     search_list_6, search_list_7, search_list_8, search_list_9, search_list_10
+# ]
+
+# # Generate the queries dynamically
+# queries = []
+# for i in range(10):
+#     query = f'"{search_key}" OR intitle:"{search_key}" {search_dates} ({search_lists[i]})'
+#     queries.append(query)
+
+
+def read_excel_data():
+    data = pd.read_excel(r"websites_list.xlsx")
+    
+    return data    
+
+
+def generate_dynamic_queries():
+    data = read_excel_data()
+    websites = data['Website'].to_list()
+    print(websites)
+    
+    search_list = []
+    
+    for i in range(0, len(websites), 20):
+        
+        group = websites[i:i+20]
+        search_list.append(group)
+        
+    queries = []
+    for i in range(len(search_list)):
+        query = f'"{search_key}" OR intitle:"{search_key}" {search_dates} ({ " OR ".join([f"site:{site}" for site in search_list[i]]) })'
+        queries.append(query)
+        
+    return queries
+    
 
 d = 0
 
@@ -114,7 +159,7 @@ def get_data(response, results, query):
             
             if i >= 41: # her bir sayfayı gezerken belirlediğiniz yerde durmasını sağlar
                 break
-            if total_results > 2:
+            if total_results > 3:
                 response = send_request(query ,start=i) 
                 print("Response yollandı")
            
@@ -216,20 +261,13 @@ def save_data(data, results):
             results.append({
                 "title": item.get("title"),
                 "link": link,
-                "snippet": item.get("snippet")
+                "snippet": item.get("snippet"),
+                "date:": item.get("snippet")[0:13]
             })
             number+=1
         d +=number
         print(d)
     print(f"number counts{number}")
-
-    
-
-def take_query():
-    
-    
-    
-    pass
 
 
 
@@ -245,6 +283,8 @@ def main():
     Returns:
         None: This function does not return any value. It processes the search queries and saves the results.
     """
+
+    queries = generate_dynamic_queries()
     for query in queries:
         response = send_request(query, start=1)
         if response.status_code == 200:
