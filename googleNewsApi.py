@@ -182,10 +182,7 @@ def process_response(
         # Verilen mantığı koruyoruz
        
         start_indices = [start for start in range(11, min(total_results, int(page_index_count)), results_per_page)]
-        # Eğer start_indices boşsa (örneğin total_results >= 11 olduğunda),
-        # en azından ikinci sayfa için tek bir istek yapılmasını sağlıyoruz.
-        if not start_indices:
-            start_indices = [11]
+
         for start in start_indices:
             response = send_request(query, API_KEY, CX_ID, start=start)
             if response.status_code != 200:
@@ -194,8 +191,8 @@ def process_response(
                 break
 
             data = response.json()
-            articles = data.get("items", [])
-            if not articles:
+            total_results = int(data["searchInformation"]["totalResults"])
+            if not total_results:
                 print("No articles found.")
                 break
 
@@ -204,7 +201,7 @@ def process_response(
             _total_page_count += 1
 
             # Eğer bu sayfada dönen sonuç sayısı 5'ten azsa, ek istek yapılmaz
-            if len(articles) < 5:
+            if total_results < 10:
                 break
     else:
         # Toplam sonuç 10 veya daha az ise, ilk sayfa kaydedildikten sonra başka istek yapılmaz.
@@ -253,11 +250,11 @@ def main(search_key: str,
 
 if __name__ == "__main__":
     main(
-        search_key='("Labour Violation" OR "Workers Rights" OR "Workers Right" OR "Decent Work" OR "Labor Violation" OR "Waight" OR "Workers Conditions")',
-        original_topic_name="Labour Violation",
-        search_dates="after:2025-03-23 before:2025-03-25",
+        search_key='("Child Labour" OR "Child Labor")',
+        original_topic_name="Child Labour",
+        search_dates="after:2024-08-20 before:2025-01-25",
         topicId="123",
-        excel_path="websites_list.xlsx",
-        page_index_count=21,
+        excel_path="news/collector-frontend-newsapi-main/websites_list.xlsx",
+        page_index_count=31,
         folder="req"
     )
